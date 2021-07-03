@@ -12,3 +12,4 @@ num-bigint = "*"
 num-traits = "*"
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
+cov-mark = "*"

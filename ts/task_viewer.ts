@@ -34,8 +34,6 @@ async function main() {
 
 function render_task(tasks: NamedTask[], task_no: number) {
     let task = tasks[task_no];
-    let caption = document.getElementById('caption')!;
-    caption.innerText = `${task.name} (${task_no + 1}/${tasks.length})`;
     let canvas = document.querySelector('canvas')!;
     canvas.width = canvas.width;  // clear
     let ctx = canvas.getContext("2d")!;
@@ -53,12 +51,15 @@ function render_task(tasks: NamedTask[], task_no: number) {
             y2 = Math.max(y2, y);
         }
     }
-    let scale = Math.min(canvas.width / (x2 - x1), canvas.height / (y2 - y1));
+    let border = 3.5;
+    let scale = Math.min(
+        (canvas.width - 2 * border) / (x2 - x1),
+        (canvas.height - 2 * border) / (y2 - y1));
 
     function transform([x, y]: Pt): Pt {
         return [
-            (x - x1) * scale,
-            (y - y1) * scale,
+            border + (x - x1) * scale,
+            border + (y - y1) * scale,
         ];
     }
 
@@ -70,6 +71,10 @@ function render_task(tasks: NamedTask[], task_no: number) {
         ctx.lineTo(...transform(edge[1]));
         ctx.stroke();
     }
+
+    let caption = document.getElementById('caption')!;
+    let sz = Math.max(x2 - x1, y2 - y1);
+    caption.innerText = `${task.name} (${task_no + 1}/${tasks.length}), size=${sz}`;
 }
 
 main();

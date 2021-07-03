@@ -1,13 +1,13 @@
 use crate::prelude::*;
 
 #[derive(Debug)]
-pub struct Problem {
+pub struct Task {
     pub silhouette: Vec<Vec<Vec2>>,
     pub skeleton: Vec<(Vec2, Vec2)>,
 }
 
-impl Problem {
-    pub fn parse(s: &str) -> Problem {
+impl Task {
+    pub fn parse(s: &str) -> Task {
         let mut lines = s.split_terminator('\n');
 
         let line = lines.next().unwrap();
@@ -32,7 +32,7 @@ impl Problem {
             let (a, b) = line.trim().split_once(' ').unwrap();
             skeleton.push((Vec2::parse(a), Vec2::parse(b)));
         }
-        Problem {
+        Task {
             silhouette,
             skeleton,
         }
@@ -48,7 +48,7 @@ mod tests {
     fn test_parse() {
         let s = std::fs::read_to_string(
             project_path("data/tasks/A-16.txt")).unwrap();
-        let p = Problem::parse(&s);
+        let p = Task::parse(&s);
         dbg!(p);
     }
 
@@ -58,7 +58,7 @@ mod tests {
         for e in entries {
             let e = e.unwrap();
             dbg!(e.path());
-            Problem::parse(&std::fs::read_to_string(e.path()).unwrap());
+            Task::parse(&std::fs::read_to_string(e.path()).unwrap());
         }
     }
 }

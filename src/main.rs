@@ -2,7 +2,7 @@
 
 mod example;
 mod util;
-mod problem;
+mod task;
 mod geom;
 mod prelude;
 mod js_types;

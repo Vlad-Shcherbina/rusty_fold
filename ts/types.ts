@@ -10,5 +10,5 @@ interface Task {
 
 interface NamedTask {
     name: string,
-    problem: Task,
+    task: Task,
 }

@@ -44,7 +44,7 @@ function render_task(tasks: NamedTask[], task_no: number) {
     let y1 = Infinity;
     let x2 = -Infinity;
     let y2 = -Infinity;
-    for (let edge of task.problem.skeleton) {
+    for (let edge of task.task.skeleton) {
         for (let pt of edge) {
             let [x, y] = pt;
             x1 = Math.min(x1, x);
@@ -64,7 +64,7 @@ function render_task(tasks: NamedTask[], task_no: number) {
 
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'black';
-    for (let edge of task.problem.skeleton) {
+    for (let edge of task.task.skeleton) {
         ctx.beginPath();
         ctx.moveTo(...transform(edge[0]));
         ctx.lineTo(...transform(edge[1]));

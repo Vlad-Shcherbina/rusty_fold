@@ -1,5 +1,10 @@
+#![allow(dead_code)]
+
 mod example;
 mod util;
+mod problem;
+mod geom;
+mod prelude;
 
 #[linkme::distributed_slice]
 static ENTRY_POINTS: [(&str, fn())] = [..];

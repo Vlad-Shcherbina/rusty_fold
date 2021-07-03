@@ -7,3 +7,5 @@ edition = "2018"
 
 [dependencies]
 linkme = "*"
+num-rational = "*"
+num-bigint = "*"

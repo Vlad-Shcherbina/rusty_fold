@@ -1,4 +1,4 @@
-use num_traits::{FromPrimitive, Zero};
+use num_traits::{FromPrimitive, Zero, One};
 use crate::prelude::*;
 
 #[derive(Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -25,6 +25,35 @@ impl Vec2 {
     fn cross(&self, other: &Vec2) -> BigRational {
         &self.x * &other.y - &self.y * &other.x
     }
+
+    fn rot_cw90(&mut self) {
+        std::mem::swap(&mut self.x, &mut self.y);
+        self.y = -&self.y;
+    }
+
+    pub fn angle(mut self) -> BigRational {
+        assert!(!self.x.is_zero() || !self.y.is_zero());
+        let mut s = BigRational::zero();
+        loop {
+            if self.x >= BigRational::zero() &&
+               self.y >= BigRational::zero() {
+                return s + &self.y / (&self.x + &self.y);
+            }
+            s += BigRational::one();
+            self.rot_cw90();
+        }
+    }
+}
+
+#[test]
+fn test_angle() {
+    assert_eq!(Vec2::parse("10,0").angle().to_string(), "0");
+    assert_eq!(Vec2::parse("0,10").angle().to_string(), "1");
+    assert_eq!(Vec2::parse("-10,0").angle().to_string(), "2");
+    assert_eq!(Vec2::parse("0,-10").angle().to_string(), "3");
+
+    assert_eq!(Vec2::parse("1,1").angle().to_string(), "1/2");
+    assert_eq!(Vec2::parse("-1,-3").angle().to_string(), "11/4");
 }
 
 impl std::ops::Sub<&Vec2> for &Vec2 {
@@ -49,7 +78,7 @@ impl std::ops::Mul<&BigRational> for &Vec2 {
     }
 }
 
-fn iter_edges(poly: &[Vec2]) -> impl Iterator<Item=(&Vec2, &Vec2)> {
+pub fn iter_edges(poly: &[Vec2]) -> impl Iterator<Item=(&Vec2, &Vec2)> {
     poly.iter().zip(
         poly.iter().skip(1).chain(std::iter::once(&poly[0]))
     )

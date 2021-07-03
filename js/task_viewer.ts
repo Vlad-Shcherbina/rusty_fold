@@ -28,12 +28,15 @@ async function main() {
                 render_task(tasks, task_no);
                 break;
             }
+            default:
+                render_task(tasks, task_no);
         }
     };
 }
 
 function render_task(tasks: NamedTask[], task_no: number) {
     let task = tasks[task_no];
+    let t = task.subdivided_task;
     let canvas = document.querySelector('canvas')!;
     canvas.width = canvas.width;  // clear
     let ctx = canvas.getContext("2d")!;
@@ -42,7 +45,7 @@ function render_task(tasks: NamedTask[], task_no: number) {
     let y1 = Infinity;
     let x2 = -Infinity;
     let y2 = -Infinity;
-    for (let edge of task.task.skeleton) {
+    for (let edge of t.skeleton) {
         for (let pt of edge) {
             let [x, y] = pt;
             x1 = Math.min(x1, x);
@@ -62,41 +65,36 @@ function render_task(tasks: NamedTask[], task_no: number) {
             border + (y - y1) * scale,
         ];
     }
+    function perturb([x, y]: [number, number]): [number, number] {
+        return [x + 7 * (Math.random() - 0.5), y + 7 * (Math.random() - 0.5)];
+    }
 
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'black';
-    for (let edge of task.task.skeleton) {
+    for (let edge of t.skeleton) {
         ctx.beginPath();
-        ctx.moveTo(...transform(edge[0]));
-        ctx.lineTo(...transform(edge[1]));
+        ctx.moveTo(...perturb(transform(edge[0])));
+        ctx.lineTo(...perturb(transform(edge[1])));
         ctx.stroke();
     }
-
-    ctx.strokeStyle = 'blue';
-    for (let edge of task.task.subdivided_skeleton) {
-        ctx.beginPath();
-        let [x, y] = transform(edge[0]);
-        ctx.moveTo(x + Math.random() * 5, y + Math.random() * 5);
-        [x, y] = transform(edge[1]);
-        ctx.lineTo(x + Math.random() * 5, y + Math.random() * 5);
-        ctx.stroke();
-    }
-
-    let caption = document.getElementById('caption')!;
-    let sz = Math.max(x2 - x1, y2 - y1);
-    caption.innerText = `${task.name} (${task_no + 1}/${tasks.length}), size=${sz}`;
 
     ctx.lineWidth = 2;
     ctx.strokeStyle = '#0a0';
     ctx.beginPath();
-    for (let pt of task.task.outer) {
+    for (let pt of t.outer) {
         ctx.lineTo(...transform(pt));
     }
     ctx.closePath();
     ctx.stroke();
 
+    ctx.beginPath();
+    for (let pt of t.outer) {
+        ctx.arc(...transform(pt), 2, 0, 2 * Math.PI);
+    }
+    ctx.stroke();
+
     ctx.strokeStyle = '#a00';
-    for (let hole of task.task.holes) {
+    for (let hole of t.holes) {
         ctx.beginPath();
         for (let pt of hole) {
             ctx.lineTo(...transform(pt));
@@ -104,6 +102,10 @@ function render_task(tasks: NamedTask[], task_no: number) {
         ctx.closePath();
         ctx.stroke();
     }
+
+    let caption = document.getElementById('caption')!;
+    let sz = Math.max(x2 - x1, y2 - y1);
+    caption.innerText = `${task.name} (${task_no + 1}/${tasks.length}), size=${sz}`;
 }
 
 main();

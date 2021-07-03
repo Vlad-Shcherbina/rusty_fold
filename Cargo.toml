@@ -9,3 +9,6 @@ edition = "2018"
 linkme = "*"
 num-rational = "*"
 num-bigint = "*"
+num-traits = "*"
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"

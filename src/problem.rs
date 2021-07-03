@@ -1,13 +1,13 @@
 use crate::prelude::*;
 
 #[derive(Debug)]
-struct Problem {
-    silhouette: Vec<Vec<Vec2>>,
-    skeleton: Vec<(Vec2, Vec2)>,
+pub struct Problem {
+    pub silhouette: Vec<Vec<Vec2>>,
+    pub skeleton: Vec<(Vec2, Vec2)>,
 }
 
 impl Problem {
-    fn parse(s: &str) -> Problem {
+    pub fn parse(s: &str) -> Problem {
         let mut lines = s.split_terminator('\n');
 
         let line = lines.next().unwrap();

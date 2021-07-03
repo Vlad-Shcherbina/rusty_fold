@@ -7,6 +7,7 @@ interface Task {
     outer: Poly,
     holes: Poly[],
     skeleton: [Pt, Pt][],
+    subdivided_skeleton: [Pt, Pt][],
 }
 
 interface NamedTask {

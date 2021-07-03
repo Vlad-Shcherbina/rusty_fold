@@ -72,6 +72,16 @@ function render_task(tasks: NamedTask[], task_no: number) {
         ctx.stroke();
     }
 
+    ctx.strokeStyle = 'blue';
+    for (let edge of task.task.subdivided_skeleton) {
+        ctx.beginPath();
+        let [x, y] = transform(edge[0]);
+        ctx.moveTo(x + Math.random() * 5, y + Math.random() * 5);
+        [x, y] = transform(edge[1]);
+        ctx.lineTo(x + Math.random() * 5, y + Math.random() * 5);
+        ctx.stroke();
+    }
+
     let caption = document.getElementById('caption')!;
     let sz = Math.max(x2 - x1, y2 - y1);
     caption.innerText = `${task.name} (${task_no + 1}/${tasks.length}), size=${sz}`;

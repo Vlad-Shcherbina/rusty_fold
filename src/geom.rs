@@ -1,7 +1,7 @@
 use num_traits::{FromPrimitive, Zero};
 use crate::prelude::*;
 
-#[derive(PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Vec2 {
     pub x: BigRational,
     pub y: BigRational,

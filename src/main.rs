@@ -6,6 +6,7 @@ mod task;
 mod geom;
 mod prelude;
 mod js_types;
+mod mesh;
 
 #[linkme::distributed_slice]
 static ENTRY_POINTS: [(&str, fn())] = [..];

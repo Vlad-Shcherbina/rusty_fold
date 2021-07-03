@@ -17,6 +17,7 @@ struct Task {
     outer: Poly,
     holes: Vec<Poly>,
     skeleton: Vec<(Pt, Pt)>,
+    subdivided_skeleton: Vec<(Pt, Pt)>,
 }
 
 fn vec2_to_pt(p: &Vec2) -> Pt {
@@ -31,13 +32,21 @@ impl From<&crate::task::Task> for Task {
             poly.iter().map(vec2_to_pt).collect()
         )
         .collect();
-        let skeleton = p.skeleton.iter()
+        let skeleton: Vec<_> = p.skeleton.iter()
         .map(|(a, b)| (vec2_to_pt(a), vec2_to_pt(b)))
         .collect();
+
+        let subdivided_skeleton = crate::mesh::subdivide_edges(&p.skeleton);
+        let subdivided_skeleton: Vec<_> = subdivided_skeleton.iter()
+        .map(|(a, b)| (vec2_to_pt(a), vec2_to_pt(b)))
+        .collect();
+
+        eprintln!("{} {}", skeleton.len(), subdivided_skeleton.len());
         Task {
             outer,
             holes,
             skeleton,
+            subdivided_skeleton,
         }
     }
 }
@@ -48,6 +57,7 @@ fn render_all_tasks() {
     for e in project_path("data/tasks").read_dir().unwrap() {
         let path = e.unwrap().path();
         let name = path.file_name().unwrap().to_string_lossy().to_string();
+        eprintln!("{}", name);
         let task = crate::task::Task::parse(&std::fs::read_to_string(path).unwrap());
         let task = Task::from(&task);
         let task = NamedTask { name, task };

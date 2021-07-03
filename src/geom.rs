@@ -1,3 +1,4 @@
+use num_traits::FromPrimitive;
 use crate::prelude::*;
 
 pub struct Vec2 {
@@ -19,4 +20,18 @@ impl Vec2 {
             y: y.parse().unwrap(),
         }
     }
+}
+
+fn iter_edges(poly: &[Vec2]) -> impl Iterator<Item=(&Vec2, &Vec2)> {
+    poly.iter().zip(
+        poly.iter().skip(1).chain(std::iter::once(&poly[0]))
+    )
+}
+
+pub fn area(poly: &[Vec2]) -> BigRational {
+    let mut s: BigRational = num_traits::zero();
+    for (a, b) in iter_edges(poly) {
+        s += (&a.x + &b.x) * (&b.y - &a.y);
+    }
+    s / BigRational::from_i32(2).unwrap()
 }

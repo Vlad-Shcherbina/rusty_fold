@@ -4,7 +4,8 @@ type Pt = [number, number]
 type Poly = Pt[]
 
 interface Task {
-    silhouette: Poly[],
+    outer: Poly,
+    holes: Poly[],
     skeleton: [Pt, Pt][],
 }
 

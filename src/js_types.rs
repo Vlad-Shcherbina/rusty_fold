@@ -4,7 +4,7 @@ use num_traits::cast::ToPrimitive;
 // Keep these type definitions in sync with ts/types.ts
 
 #[derive(serde::Serialize)]
-pub struct NamedTask {
+struct NamedTask {
     name: String,
     task: Task,
 }
@@ -13,8 +13,9 @@ type Pt = (f64, f64);
 type Poly = Vec<Pt>;
 
 #[derive(serde::Serialize)]
-pub struct Task {
-    silhouette: Vec<Poly>,
+struct Task {
+    outer: Poly,
+    holes: Vec<Poly>,
     skeleton: Vec<(Pt, Pt)>,
 }
 
@@ -24,7 +25,8 @@ fn vec2_to_pt(p: &Vec2) -> Pt {
 
 impl From<&crate::task::Task> for Task {
     fn from(p: &crate::task::Task) -> Self {
-        let silhouette = p.silhouette.iter()
+        let outer = p.outer.iter().map(vec2_to_pt).collect();
+        let holes = p.holes.iter()
         .map(|poly|
             poly.iter().map(vec2_to_pt).collect()
         )
@@ -33,7 +35,8 @@ impl From<&crate::task::Task> for Task {
         .map(|(a, b)| (vec2_to_pt(a), vec2_to_pt(b)))
         .collect();
         Task {
-            silhouette,
+            outer,
+            holes,
             skeleton,
         }
     }

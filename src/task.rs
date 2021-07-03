@@ -2,7 +2,8 @@ use crate::prelude::*;
 
 #[derive(Debug)]
 pub struct Task {
-    pub silhouette: Vec<Vec<Vec2>>,
+    pub outer: Vec<Vec2>,
+    pub holes: Vec<Vec<Vec2>>,
     pub skeleton: Vec<(Vec2, Vec2)>,
 }
 
@@ -12,7 +13,8 @@ impl Task {
 
         let line = lines.next().unwrap();
         let n: usize = line.trim().parse().unwrap();
-        let mut silhouette = vec![];
+        let mut pos_polys = vec![];
+        let mut neg_polys = vec![];
         for _ in 0..n {
             let line = lines.next().unwrap();
             let m: usize = line.trim().parse().unwrap();
@@ -21,7 +23,12 @@ impl Task {
                 let line = lines.next().unwrap();
                 poly.push(Vec2::parse(line.trim()));
             }
-            silhouette.push(poly);
+            match area(&poly).cmp(&num_traits::zero()) {
+                std::cmp::Ordering::Less => neg_polys.push(poly),
+                std::cmp::Ordering::Equal => panic!(),
+                std::cmp::Ordering::Greater => pos_polys.push(poly),
+            }
+            assert_eq!(pos_polys.len(), 1);
         }
 
         let line = lines.next().unwrap();
@@ -33,7 +40,8 @@ impl Task {
             skeleton.push((Vec2::parse(a), Vec2::parse(b)));
         }
         Task {
-            silhouette,
+            outer: pos_polys.pop().unwrap(),
+            holes: neg_polys,
             skeleton,
         }
     }

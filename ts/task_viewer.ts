@@ -75,6 +75,25 @@ function render_task(tasks: NamedTask[], task_no: number) {
     let caption = document.getElementById('caption')!;
     let sz = Math.max(x2 - x1, y2 - y1);
     caption.innerText = `${task.name} (${task_no + 1}/${tasks.length}), size=${sz}`;
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#0a0';
+    ctx.beginPath();
+    for (let pt of task.task.outer) {
+        ctx.lineTo(...transform(pt));
+    }
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.strokeStyle = '#a00';
+    for (let hole of task.task.holes) {
+        ctx.beginPath();
+        for (let pt of hole) {
+            ctx.lineTo(...transform(pt));
+        }
+        ctx.closePath();
+        ctx.stroke();
+    }
 }
 
 main();

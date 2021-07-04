@@ -13,6 +13,10 @@ interface Task {
 interface Mesh {
     pts: Pt[],
     half_edges: [number, number][],
+    next: number[],
+    he_poly: number[],
+    poly_he: number[],
+    poly_real: boolean[],
 }
 
 interface NamedTask {

@@ -58,12 +58,16 @@ pub struct Mesh {
     opposite: Vec<usize>,
     prev: Vec<usize>,
     next: Vec<usize>,
+
+    he_poly: Vec<usize>,
+    poly_he: Vec<usize>,
+    poly_real: Vec<bool>,
 }
 
 impl Mesh {
-    pub fn new(edges: &[(Pt, Pt)]) -> Mesh {
+    pub fn new(task: &Task) -> Mesh {
         let mut pts: HashSet<Pt> = HashSet::new();
-        for (a, b) in edges {
+        for (a, b) in &task.skeleton {
             pts.insert(a.clone());
             pts.insert(b.clone());
         }
@@ -75,7 +79,7 @@ impl Mesh {
             .collect();
 
         let mut adj: Vec<Vec<usize>> = vec![vec![]; pts.len()];
-        for (a, b) in edges {
+        for (a, b) in &task.skeleton {
             let a = pt_to_idx[a];
             let b = pt_to_idx[b];
             adj[a].push(b);
@@ -106,11 +110,38 @@ impl Mesh {
         let mut next = vec![usize::max_value(); half_edges.len()];
         for (start, ends) in adj.iter().enumerate() {
             for (&end1, &end2) in ends.iter().zip(ends.iter().skip(1).chain(std::iter::once(&ends[0]))) {
-                let he1 = pt_idxs_to_half_edge[&(end1, start)];
-                let he2 = pt_idxs_to_half_edge[&(start, end2)];
+                let he1 = pt_idxs_to_half_edge[&(end2, start)];
+                let he2 = pt_idxs_to_half_edge[&(start, end1)];
                 next[he1] = he2;
                 prev[he2] = he1;
             }
+        }
+
+        let mut he_poly: Vec<Option<usize>> = vec![None; half_edges.len()];
+        let mut poly_he = vec![];
+
+        for e in 0..half_edges.len() {
+            if he_poly[e].is_some() {
+                continue;
+            }
+            let mut e2 = e;
+            loop {
+                he_poly[e2] = Some(poly_he.len());
+                e2 = next[e2];
+                if e2 == e {
+                    break;
+                }
+            }
+            poly_he.push(e);
+        }
+        let he_poly: Vec<usize> = he_poly.into_iter().map(Option::unwrap).collect();
+
+        let mut poly_real = vec![true; poly_he.len()];
+        let e = pt_idxs_to_half_edge[&(pt_to_idx[&task.outer[1]], pt_to_idx[&task.outer[0]])];
+        poly_real[he_poly[e]] = false;
+        for hole in &task.holes {
+            let e = pt_idxs_to_half_edge[&(pt_to_idx[&hole[1]], pt_to_idx[&hole[0]])];
+            poly_real[he_poly[e]] = false;
         }
 
         Mesh {
@@ -122,6 +153,10 @@ impl Mesh {
             opposite,
             next,
             prev,
+
+            he_poly,
+            poly_he,
+            poly_real,
         }
     }
 }
@@ -132,6 +167,6 @@ fn test_mesh() {
         project_path("data/tasks/A-01.txt")).unwrap();
     let t = Task::parse(&s);
     let t = subdivide(&t);
-    let mesh = Mesh::new(&t.skeleton);
+    let mesh = Mesh::new(&t);
     dbg!(mesh);
 }

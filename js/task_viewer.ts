@@ -37,6 +37,7 @@ async function main() {
 function render_task(tasks: NamedTask[], task_no: number) {
     let task = tasks[task_no];
     let t = task.subdivided_task;
+    let mesh = task.mesh;
     let canvas = document.querySelector('canvas')!;
     canvas.width = canvas.width;  // clear
     let ctx = canvas.getContext("2d")!;
@@ -54,7 +55,7 @@ function render_task(tasks: NamedTask[], task_no: number) {
             y2 = Math.max(y2, y);
         }
     }
-    let border = 3.5;
+    let border = 100.5;
     let scale = Math.min(
         (canvas.width - 2 * border) / (x2 - x1),
         (canvas.height - 2 * border) / (y2 - y1));
@@ -68,6 +69,26 @@ function render_task(tasks: NamedTask[], task_no: number) {
     function perturb([x, y]: [number, number]): [number, number] {
         return [x + 7 * (Math.random() - 0.5), y + 7 * (Math.random() - 0.5)];
     }
+
+    console.dir(mesh.poly_real);
+
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = 'gray';
+    mesh.poly_he.forEach((he, i) => {
+        if (mesh.poly_real[i]) {
+            let he2 = he;
+            ctx.beginPath();
+            while (true) {
+                ctx.lineTo(...transform(mesh.pts[mesh.half_edges[he2][0]]));
+                he2 = mesh.next[he2];
+                if (he2 == he) {
+                    break;
+                }
+            }
+            ctx.fill();
+        }
+    });
+    ctx.globalAlpha = 1.0;
 
     ctx.lineWidth = 1;
     ctx.strokeStyle = 'black';
@@ -105,9 +126,12 @@ function render_task(tasks: NamedTask[], task_no: number) {
 
     ctx.lineWidth = 0.5;
     ctx.strokeStyle = '#00a';
-    for (let [i, j] of task.mesh.half_edges) {
-        let [x1, y1] = task.mesh.pts[i];
-        let [x2, y2] = task.mesh.pts[j];
+    mesh.half_edges.forEach(([i, j], idx) => {
+        if (!mesh.poly_real[mesh.he_poly[idx]]) {
+            return;
+        }
+        let [x1, y1] = mesh.pts[i];
+        let [x2, y2] = mesh.pts[j];
         let dx = x2 - x1;
         let dy = y2 - y1;
         let q = 0.1;
@@ -115,7 +139,7 @@ function render_task(tasks: NamedTask[], task_no: number) {
         ctx.moveTo(...transform([x1 + 0.5 * dx - q * dy, y1 + 0.5 * dy + q * dx]));
         ctx.lineTo(...transform([x2 - q * dx - q * dy, y2 - q * dy + q * dx]));
         ctx.stroke();
-    }
+    });
 
     let caption = document.getElementById('caption')!;
     let sz = Math.max(x2 - x1, y2 - y1);

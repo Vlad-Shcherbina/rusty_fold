@@ -13,3 +13,12 @@ num-traits = "*"
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
 cov-mark = "*"
+
+[profile.dev.package."*"]
+debug = false
+[profile.dev.build-override]
+debug = false
+
+[profile.release]
+panic = "abort"
+incremental = true

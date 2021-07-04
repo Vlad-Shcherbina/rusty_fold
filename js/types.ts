@@ -1,4 +1,5 @@
-// Keep these type definitions in sync with src/js_types.rs
+// Keep these type definitions in sync with all Rust types that implement
+// serde::Serialize.
 
 type Pt = [number, number]
 type Poly = Pt[]

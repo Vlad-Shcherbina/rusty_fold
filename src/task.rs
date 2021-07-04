@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+#[derive(serde::Serialize)]
 #[derive(Debug)]
 pub struct Task {
     pub outer: Vec<Vec2>,

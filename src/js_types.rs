@@ -1,5 +1,4 @@
 use crate::prelude::*;
-use num_traits::cast::ToPrimitive;
 
 // Keep these type definitions in sync with ts/types.ts
 
@@ -8,39 +7,6 @@ struct NamedTask {
     name: String,
     task: Task,
     subdivided_task: Task,
-}
-
-type Pt = (f64, f64);
-type Poly = Vec<Pt>;
-
-#[derive(serde::Serialize)]
-struct Task {
-    outer: Poly,
-    holes: Vec<Poly>,
-    skeleton: Vec<(Pt, Pt)>,
-}
-
-fn vec2_to_pt(p: &Vec2) -> Pt {
-    (p.x.to_f64().unwrap(), p.y.to_f64().unwrap())
-}
-
-impl From<&crate::task::Task> for Task {
-    fn from(p: &crate::task::Task) -> Self {
-        let outer = p.outer.iter().map(vec2_to_pt).collect();
-        let holes = p.holes.iter()
-        .map(|poly|
-            poly.iter().map(vec2_to_pt).collect()
-        )
-        .collect();
-        let skeleton: Vec<_> = p.skeleton.iter()
-        .map(|(a, b)| (vec2_to_pt(a), vec2_to_pt(b)))
-        .collect();
-        Task {
-            outer,
-            holes,
-            skeleton,
-        }
-    }
 }
 
 crate::entry_point!("render_all_tasks", render_all_tasks);
@@ -52,8 +18,6 @@ fn render_all_tasks() {
         eprintln!("{}", name);
         let task = crate::task::Task::parse(&std::fs::read_to_string(path).unwrap());
         let subdivided_task = crate::mesh::subdivide(&task);
-        let task = Task::from(&task);
-        let subdivided_task = Task::from(&subdivided_task);
         let t = NamedTask {
             name,
             task,

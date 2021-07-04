@@ -1,6 +1,8 @@
-use num_traits::{FromPrimitive, Zero, One};
+use num_traits::{FromPrimitive, ToPrimitive, Zero, One};
 use crate::prelude::*;
 
+#[derive(serde::Serialize)]
+#[serde(into="(f64, f64)")]
 #[derive(Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Vec2 {
     pub x: BigRational,
@@ -10,6 +12,12 @@ pub struct Vec2 {
 impl std::fmt::Debug for Vec2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "({}, {})", self.x, self.y)
+    }
+}
+
+impl From<Vec2> for (f64, f64) {
+    fn from(p: Vec2) -> Self {
+        (p.x.to_f64().unwrap(), p.y.to_f64().unwrap())
     }
 }
 

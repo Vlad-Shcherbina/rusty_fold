@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use crate::prelude::*;
 use crate::geom::segment_intersection;
 
-fn subdivide_edge(a: &Vec2, b: &Vec2, edges: &[(Vec2, Vec2)]) -> Vec<Vec2> {
+fn subdivide_edge(a: &Pt, b: &Pt, edges: &[(Pt, Pt)]) -> Vec<Pt> {
     let mut pts = HashSet::new();
     pts.insert(a.clone());
     pts.insert(b.clone());
@@ -11,7 +11,7 @@ fn subdivide_edge(a: &Vec2, b: &Vec2, edges: &[(Vec2, Vec2)]) -> Vec<Vec2> {
             pts.insert(pt);
         }
     }
-    let mut pts: Vec<Vec2> = pts.into_iter().collect();
+    let mut pts: Vec<Pt> = pts.into_iter().collect();
     pts.sort();
     if a > b {
         pts.reverse();
@@ -19,7 +19,7 @@ fn subdivide_edge(a: &Vec2, b: &Vec2, edges: &[(Vec2, Vec2)]) -> Vec<Vec2> {
     pts
 }
 
-fn subdivide_poly(poly: &[Vec2], edges: &[(Vec2, Vec2)]) -> Vec<Vec2> {
+fn subdivide_poly(poly: &[Pt], edges: &[(Pt, Pt)]) -> Vec<Pt> {
     let mut res = vec![];
     for (a, b) in iter_edges(poly) {
         for pt in subdivide_edge(a, b, edges).iter().skip(1) {
@@ -46,8 +46,8 @@ pub fn subdivide(task: &Task) -> Task {
 
 #[derive(Debug)]
 struct Mesh {
-    pts: Vec<Vec2>,
-    pt_to_idx: HashMap<Vec2, usize>,
+    pts: Vec<Pt>,
+    pt_to_idx: HashMap<Pt, usize>,
     // polys: Vec<Vec<usize>>,
 
     pt_idxs_to_half_edge: HashMap<(usize, usize), usize>,
@@ -58,16 +58,16 @@ struct Mesh {
 }
 
 impl Mesh {
-    fn new(edges: &[(Vec2, Vec2)]) -> Mesh {
-        let mut pts: HashSet<Vec2> = HashSet::new();
+    fn new(edges: &[(Pt, Pt)]) -> Mesh {
+        let mut pts: HashSet<Pt> = HashSet::new();
         for (a, b) in edges {
             pts.insert(a.clone());
             pts.insert(b.clone());
         }
-        let mut pts: Vec<Vec2> = pts.into_iter().collect();
+        let mut pts: Vec<Pt> = pts.into_iter().collect();
         pts.sort();
 
-        let pt_to_idx: HashMap<Vec2, usize> = pts.iter().enumerate()
+        let pt_to_idx: HashMap<Pt, usize> = pts.iter().enumerate()
             .map(|(i, pt)| (pt.clone(), i))
             .collect();
 

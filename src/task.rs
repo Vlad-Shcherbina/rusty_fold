@@ -3,9 +3,9 @@ use crate::prelude::*;
 #[derive(serde::Serialize)]
 #[derive(Debug)]
 pub struct Task {
-    pub outer: Vec<Vec2>,
-    pub holes: Vec<Vec<Vec2>>,
-    pub skeleton: Vec<(Vec2, Vec2)>,
+    pub outer: Vec<Pt>,
+    pub holes: Vec<Vec<Pt>>,
+    pub skeleton: Vec<(Pt, Pt)>,
 }
 
 impl Task {
@@ -22,7 +22,7 @@ impl Task {
             let mut poly = vec![];
             for _ in 0..m {
                 let line = lines.next().unwrap();
-                poly.push(Vec2::parse(line.trim()));
+                poly.push(Pt::parse(line.trim()));
             }
             match area(&poly).cmp(&num_traits::zero()) {
                 std::cmp::Ordering::Less => neg_polys.push(poly),
@@ -38,7 +38,7 @@ impl Task {
         for _ in 0..n {
             let line = lines.next().unwrap();
             let (a, b) = line.trim().split_once(' ').unwrap();
-            skeleton.push((Vec2::parse(a), Vec2::parse(b)));
+            skeleton.push((Pt::parse(a), Pt::parse(b)));
         }
         Task {
             outer: pos_polys.pop().unwrap(),

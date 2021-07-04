@@ -7,7 +7,7 @@ fn subdivide_edge(a: &Pt, b: &Pt, edges: &[(Pt, Pt)]) -> Vec<Pt> {
     pts.insert(a.clone());
     pts.insert(b.clone());
     for e in edges {
-        if let Some(pt) = segment_intersection((&a, &b), (&e.0, &e.1)) {
+        if let Some(pt) = segment_intersection((a, b), (&e.0, &e.1)) {
             pts.insert(pt);
         }
     }

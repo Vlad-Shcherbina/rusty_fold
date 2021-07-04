@@ -44,12 +44,15 @@ pub fn subdivide(task: &Task) -> Task {
     }
 }
 
+#[derive(serde::Serialize)]
 #[derive(Debug)]
-struct Mesh {
+pub struct Mesh {
     pts: Vec<Pt>,
+    #[serde(skip)]
     pt_to_idx: HashMap<Pt, usize>,
     // polys: Vec<Vec<usize>>,
 
+    #[serde(skip)]
     pt_idxs_to_half_edge: HashMap<(usize, usize), usize>,
     half_edges: Vec<(usize, usize)>,  // (start, end)
     opposite: Vec<usize>,
@@ -58,7 +61,7 @@ struct Mesh {
 }
 
 impl Mesh {
-    fn new(edges: &[(Pt, Pt)]) -> Mesh {
+    pub fn new(edges: &[(Pt, Pt)]) -> Mesh {
         let mut pts: HashSet<Pt> = HashSet::new();
         for (a, b) in edges {
             pts.insert(a.clone());

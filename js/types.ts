@@ -10,8 +10,14 @@ interface Task {
     skeleton: [Pt, Pt][],
 }
 
+interface Mesh {
+    pts: Pt[],
+    half_edges: [number, number][],
+}
+
 interface NamedTask {
     name: string,
     task: Task,
     subdivided_task: Task,
+    mesh: Mesh,
 }

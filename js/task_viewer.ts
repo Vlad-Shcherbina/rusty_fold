@@ -62,7 +62,7 @@ function render_task(tasks: NamedTask[], task_no: number) {
     function transform([x, y]: Pt): Pt {
         return [
             border + (x - x1) * scale,
-            border + (y - y1) * scale,
+            border + (y2 - y) * scale,
         ];
     }
     function perturb([x, y]: [number, number]): [number, number] {
@@ -73,8 +73,8 @@ function render_task(tasks: NamedTask[], task_no: number) {
     ctx.strokeStyle = 'black';
     for (let edge of t.skeleton) {
         ctx.beginPath();
-        ctx.moveTo(...perturb(transform(edge[0])));
-        ctx.lineTo(...perturb(transform(edge[1])));
+        ctx.moveTo(...transform(edge[0]));
+        ctx.lineTo(...transform(edge[1]));
         ctx.stroke();
     }
 
@@ -100,6 +100,20 @@ function render_task(tasks: NamedTask[], task_no: number) {
             ctx.lineTo(...transform(pt));
         }
         ctx.closePath();
+        ctx.stroke();
+    }
+
+    ctx.lineWidth = 0.5;
+    ctx.strokeStyle = '#00a';
+    for (let [i, j] of task.mesh.half_edges) {
+        let [x1, y1] = task.mesh.pts[i];
+        let [x2, y2] = task.mesh.pts[j];
+        let dx = x2 - x1;
+        let dy = y2 - y1;
+        let q = 0.1;
+        ctx.beginPath();
+        ctx.moveTo(...transform([x1 + 0.5 * dx - q * dy, y1 + 0.5 * dy + q * dx]));
+        ctx.lineTo(...transform([x2 - q * dx - q * dy, y2 - q * dy + q * dx]));
         ctx.stroke();
     }
 

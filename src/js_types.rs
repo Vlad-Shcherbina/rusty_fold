@@ -7,6 +7,7 @@ struct NamedTask {
     name: String,
     task: Task,
     subdivided_task: Task,
+    mesh: Mesh,
 }
 
 crate::entry_point!("render_all_tasks", render_all_tasks);
@@ -18,10 +19,12 @@ fn render_all_tasks() {
         eprintln!("{}", name);
         let task = crate::task::Task::parse(&std::fs::read_to_string(path).unwrap());
         let subdivided_task = crate::mesh::subdivide(&task);
+        let mesh = Mesh::new(&subdivided_task.skeleton);
         let t = NamedTask {
             name,
             task,
             subdivided_task,
+            mesh,
         };
         tasks.push(t);
     }

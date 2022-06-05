@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use tyndex::{Tyndex, TyVec};
 use crate::prelude::*;
 use crate::geom::segment_intersection;
 
@@ -44,6 +45,19 @@ pub fn subdivide(task: &Task) -> Task {
     }
 }
 
+#[derive(PartialEq, Eq, Clone, Copy, serde::Serialize, Debug)]
+pub struct HalfEdge(u32);
+
+impl Tyndex for HalfEdge {
+    fn from_index(i: usize) -> Self {
+        HalfEdge(i.try_into().unwrap())
+    }
+
+    fn to_index(self) -> usize {
+        self.0 as usize
+    }
+}
+
 #[derive(serde::Serialize)]
 #[derive(Debug)]
 pub struct Mesh {
@@ -53,14 +67,14 @@ pub struct Mesh {
     // polys: Vec<Vec<usize>>,
 
     #[serde(skip)]
-    pt_idxs_to_half_edge: HashMap<(usize, usize), usize>,
-    half_edges: Vec<(usize, usize)>,  // (start, end)
-    opposite: Vec<usize>,
-    prev: Vec<usize>,
-    next: Vec<usize>,
+    pt_idxs_to_half_edge: HashMap<(usize, usize), HalfEdge>,
+    half_edges: TyVec<HalfEdge, (usize, usize)>,
+    opposite: TyVec<HalfEdge, HalfEdge>,
+    prev: TyVec<HalfEdge, HalfEdge>,
+    next: TyVec<HalfEdge, HalfEdge>,
 
-    he_poly: Vec<usize>,
-    poly_he: Vec<usize>,
+    he_poly: TyVec<HalfEdge, usize>,
+    poly_he: Vec<HalfEdge>,
     poly_real: Vec<bool>,
 }
 
@@ -90,23 +104,23 @@ impl Mesh {
             aa.sort_by_cached_key(|&a| (&pts[a] - pt).angle());
         }
 
-        let mut half_edges = vec![];
+        let mut half_edges = TyVec::<HalfEdge, _>::from_raw(vec![]);
         let mut pt_idxs_to_half_edge = HashMap::new();
         for (start, ends) in adj.iter().enumerate() {
             for &end in ends {
-                let old = pt_idxs_to_half_edge.insert((start, end), half_edges.len());
+                let he = half_edges.push_and_idx((start, end));
+                let old = pt_idxs_to_half_edge.insert((start, end), he);
                 assert!(old.is_none());
-                half_edges.push((start, end));
             }
         }
 
-        let opposite: Vec<usize> = half_edges.iter()
+        let opposite = TyVec::from_raw(half_edges.raw.iter()
             .map(|&(start, end)|
                 pt_idxs_to_half_edge[&(end, start)])
-            .collect();
+            .collect());
 
-        let mut prev = vec![usize::max_value(); half_edges.len()];
-        let mut next = vec![usize::max_value(); half_edges.len()];
+        let mut prev = TyVec::from_raw(vec![HalfEdge(u32::max_value()); half_edges.raw.len()]);
+        let mut next = TyVec::from_raw(vec![HalfEdge(u32::max_value()); half_edges.raw.len()]);
         for (start, ends) in adj.iter().enumerate() {
             for (&end1, &end2) in ends.iter().zip(ends.iter().skip(1).chain(std::iter::once(&ends[0]))) {
                 let he1 = pt_idxs_to_half_edge[&(end2, start)];
@@ -116,10 +130,11 @@ impl Mesh {
             }
         }
 
-        let mut he_poly: Vec<Option<usize>> = vec![None; half_edges.len()];
+        let mut he_poly: TyVec<HalfEdge, Option<usize>> =
+            TyVec::from_raw(vec![None; half_edges.raw.len()]);
         let mut poly_he = vec![];
 
-        for e in 0..half_edges.len() {
+        for e in (0..half_edges.raw.len()).map(HalfEdge::from_index) {
             if he_poly[e].is_some() {
                 continue;
             }
@@ -133,7 +148,7 @@ impl Mesh {
             }
             poly_he.push(e);
         }
-        let he_poly: Vec<usize> = he_poly.into_iter().map(Option::unwrap).collect();
+        let he_poly = TyVec::from_raw(he_poly.raw.into_iter().map(Option::unwrap).collect());
 
         let mut poly_real = vec![true; poly_he.len()];
         let e = pt_idxs_to_half_edge[&(pt_to_idx[&task.outer[1]], pt_to_idx[&task.outer[0]])];

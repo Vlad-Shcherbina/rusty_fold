@@ -111,6 +111,7 @@ dependencies = [
  "num-traits",
  "serde",
  "serde_json",
+ "tyndex",
 ]
 
 [[package]]
@@ -159,6 +160,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tyndex"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

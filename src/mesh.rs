@@ -45,27 +45,40 @@ pub fn subdivide(task: &Task) -> Task {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Copy, serde::Serialize, Debug, Hash)]
+#[derive(serde::Serialize)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
 pub struct Vertex(u32);
 
 impl Tyndex for Vertex {
     fn from_index(i: usize) -> Self {
-        Vertex(i.try_into().unwrap())
+        Self(i.try_into().unwrap())
     }
-
     fn to_index(self) -> usize {
         self.0 as usize
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Copy, serde::Serialize, Debug)]
+#[derive(serde::Serialize)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub struct HalfEdge(u32);
 
 impl Tyndex for HalfEdge {
     fn from_index(i: usize) -> Self {
-        HalfEdge(i.try_into().unwrap())
+        Self(i.try_into().unwrap())
     }
+    fn to_index(self) -> usize {
+        self.0 as usize
+    }
+}
 
+#[derive(serde::Serialize)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub struct Poly(u32);
+
+impl Tyndex for Poly {
+    fn from_index(i: usize) -> Self {
+        Self(i.try_into().unwrap())
+    }
     fn to_index(self) -> usize {
         self.0 as usize
     }
@@ -77,7 +90,6 @@ pub struct Mesh {
     pts: TyVec<Vertex,Pt>,
     #[serde(skip)]
     pt_to_idx: HashMap<Pt, Vertex>,
-    // polys: Vec<Vec<usize>>,
 
     #[serde(skip)]
     pt_idxs_to_half_edge: HashMap<(Vertex, Vertex), HalfEdge>,
@@ -86,9 +98,9 @@ pub struct Mesh {
     prev: TyVec<HalfEdge, HalfEdge>,
     next: TyVec<HalfEdge, HalfEdge>,
 
-    he_poly: TyVec<HalfEdge, usize>,
-    poly_he: Vec<HalfEdge>,
-    poly_real: Vec<bool>,
+    he_poly: TyVec<HalfEdge, Poly>,
+    poly_he: TyVec<Poly, HalfEdge>,
+    poly_real: TyVec<Poly, bool>,
 }
 
 impl Mesh {
@@ -144,27 +156,27 @@ impl Mesh {
             }
         }
 
-        let mut he_poly: TyVec<HalfEdge, Option<usize>> =
+        let mut he_poly: TyVec<HalfEdge, Option<Poly>> =
             TyVec::from_raw(vec![None; half_edges.raw.len()]);
-        let mut poly_he = vec![];
+        let mut poly_he = TyVec::<Poly, HalfEdge>::from_raw(vec![]);
 
         for e in (0..half_edges.raw.len()).map(HalfEdge::from_index) {
             if he_poly[e].is_some() {
                 continue;
             }
+            let p = poly_he.push_and_idx(e);
             let mut e2 = e;
             loop {
-                he_poly[e2] = Some(poly_he.len());
+                he_poly[e2] = Some(p);
                 e2 = next[e2];
                 if e2 == e {
                     break;
                 }
             }
-            poly_he.push(e);
         }
         let he_poly = TyVec::from_raw(he_poly.raw.into_iter().map(Option::unwrap).collect());
 
-        let mut poly_real = vec![true; poly_he.len()];
+        let mut poly_real = TyVec::<Poly, bool>::from_raw(vec![true; poly_he.raw.len()]);
         let e = pt_idxs_to_half_edge[&(pt_to_idx[&task.outer[1]], pt_to_idx[&task.outer[0]])];
         poly_real[he_poly[e]] = false;
         for hole in &task.holes {

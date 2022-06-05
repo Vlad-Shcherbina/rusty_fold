@@ -45,6 +45,19 @@ pub fn subdivide(task: &Task) -> Task {
     }
 }
 
+#[derive(PartialEq, Eq, Clone, Copy, serde::Serialize, Debug, Hash)]
+pub struct Vertex(u32);
+
+impl Tyndex for Vertex {
+    fn from_index(i: usize) -> Self {
+        Vertex(i.try_into().unwrap())
+    }
+
+    fn to_index(self) -> usize {
+        self.0 as usize
+    }
+}
+
 #[derive(PartialEq, Eq, Clone, Copy, serde::Serialize, Debug)]
 pub struct HalfEdge(u32);
 
@@ -61,14 +74,14 @@ impl Tyndex for HalfEdge {
 #[derive(serde::Serialize)]
 #[derive(Debug)]
 pub struct Mesh {
-    pts: Vec<Pt>,
+    pts: TyVec<Vertex,Pt>,
     #[serde(skip)]
-    pt_to_idx: HashMap<Pt, usize>,
+    pt_to_idx: HashMap<Pt, Vertex>,
     // polys: Vec<Vec<usize>>,
 
     #[serde(skip)]
-    pt_idxs_to_half_edge: HashMap<(usize, usize), HalfEdge>,
-    half_edges: TyVec<HalfEdge, (usize, usize)>,
+    pt_idxs_to_half_edge: HashMap<(Vertex, Vertex), HalfEdge>,
+    half_edges: TyVec<HalfEdge, (Vertex, Vertex)>,
     opposite: TyVec<HalfEdge, HalfEdge>,
     prev: TyVec<HalfEdge, HalfEdge>,
     next: TyVec<HalfEdge, HalfEdge>,
@@ -87,12 +100,13 @@ impl Mesh {
         }
         let mut pts: Vec<Pt> = pts.into_iter().collect();
         pts.sort();
+        let pts = TyVec::<Vertex, _>::from_raw(pts);
 
-        let pt_to_idx: HashMap<Pt, usize> = pts.iter().enumerate()
+        let pt_to_idx: HashMap<Pt, Vertex> = pts.enum_ref()
             .map(|(i, pt)| (pt.clone(), i))
             .collect();
 
-        let mut adj: Vec<Vec<usize>> = vec![vec![]; pts.len()];
+        let mut adj: TyVec<Vertex, Vec<Vertex>> = TyVec::from_raw(vec![vec![]; pts.raw.len()]);
         for (a, b) in &task.skeleton {
             let a = pt_to_idx[a];
             let b = pt_to_idx[b];
@@ -100,13 +114,13 @@ impl Mesh {
             adj[b].push(a);
         }
 
-        for (aa, pt) in adj.iter_mut().zip(pts.iter()) {
+        for (aa, pt) in adj.raw.iter_mut().zip(pts.raw.iter()) {
             aa.sort_by_cached_key(|&a| (&pts[a] - pt).angle());
         }
 
         let mut half_edges = TyVec::<HalfEdge, _>::from_raw(vec![]);
         let mut pt_idxs_to_half_edge = HashMap::new();
-        for (start, ends) in adj.iter().enumerate() {
+        for (start, ends) in adj.enum_ref() {
             for &end in ends {
                 let he = half_edges.push_and_idx((start, end));
                 let old = pt_idxs_to_half_edge.insert((start, end), he);
@@ -121,7 +135,7 @@ impl Mesh {
 
         let mut prev = TyVec::from_raw(vec![HalfEdge(u32::max_value()); half_edges.raw.len()]);
         let mut next = TyVec::from_raw(vec![HalfEdge(u32::max_value()); half_edges.raw.len()]);
-        for (start, ends) in adj.iter().enumerate() {
+        for (start, ends) in adj.enum_ref() {
             for (&end1, &end2) in ends.iter().zip(ends.iter().skip(1).chain(std::iter::once(&ends[0]))) {
                 let he1 = pt_idxs_to_half_edge[&(end2, start)];
                 let he2 = pt_idxs_to_half_edge[&(start, end1)];

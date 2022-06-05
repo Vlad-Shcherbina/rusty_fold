@@ -26,9 +26,9 @@ impl<I: Tyndex, T> TyVec<I, T> {
         i
     }
 
-    // fn enum_ref(&self) -> impl Iterator<Item=(I, &T)> {
-    //     self.raw.iter().enumerate().map(|(i, v)| (I::from_index(i), v))
-    // }
+    pub fn enum_ref(&self) -> impl Iterator<Item=(I, &T)> {
+        self.raw.iter().enumerate().map(|(i, v)| (I::from_index(i), v))
+    }
 }
 
 impl<I: Tyndex, T> std::ops::Index<I> for TyVec<I, T> {

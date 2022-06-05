@@ -100,11 +100,10 @@ impl Mesh {
             }
         }
 
-        let mut opposite = vec![usize::max_value(); half_edges.len()];
-        for (i, &(start, end)) in half_edges.iter().enumerate() {
-            let opp = pt_idxs_to_half_edge[&(end, start)];
-            opposite[i] = opp;
-        }
+        let opposite: Vec<usize> = half_edges.iter()
+            .map(|&(start, end)|
+                pt_idxs_to_half_edge[&(end, start)])
+            .collect();
 
         let mut prev = vec![usize::max_value(); half_edges.len()];
         let mut next = vec![usize::max_value(); half_edges.len()];

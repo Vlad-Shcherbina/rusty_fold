@@ -141,6 +141,27 @@ function render_task(tasks: NamedTask[], task_no: number) {
         ctx.stroke();
     });
 
+    ctx.font = '24px serif';
+    ctx.fillStyle = 'white';
+    ctx.globalAlpha = 0.5;
+    mesh.pts.forEach((pt, idx) => {
+        let text = `v${idx}`;
+        let m = ctx.measureText(text);
+        let [x, y] = transform(pt);
+        ctx.fillRect(
+            -1 + x - m.width / 2, -1 + y - m.actualBoundingBoxAscent,
+            2 + m.width, 2 + m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
+    });
+
+    ctx.fillStyle = 'black';
+    ctx.globalAlpha = 1;
+    mesh.pts.forEach((pt, idx) => {
+        let text = `v${idx}`;
+        let m = ctx.measureText(text);
+        let [x, y] = transform(pt);
+        ctx.fillText(text, x - m.width / 2, y);
+    });
+
     let caption = document.getElementById('caption')!;
     let sz = Math.max(x2 - x1, y2 - y1);
     caption.innerText = `${task.name} (${task_no + 1}/${tasks.length}), size=${sz}`;

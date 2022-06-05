@@ -46,7 +46,7 @@ pub fn subdivide(task: &Task) -> Task {
 }
 
 #[derive(serde::Serialize)]
-#[derive(PartialEq, Eq, Clone, Copy, Debug, Hash)]
+#[derive(PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Vertex(u32);
 
 impl Tyndex for Vertex {
@@ -58,8 +58,14 @@ impl Tyndex for Vertex {
     }
 }
 
+impl std::fmt::Debug for Vertex {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "v{}", self.0)
+    }
+}
+
 #[derive(serde::Serialize)]
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct HalfEdge(u32);
 
 impl Tyndex for HalfEdge {
@@ -71,8 +77,14 @@ impl Tyndex for HalfEdge {
     }
 }
 
+impl std::fmt::Debug for HalfEdge {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "h{}", self.0)
+    }
+}
+
 #[derive(serde::Serialize)]
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Poly(u32);
 
 impl Tyndex for Poly {
@@ -81,6 +93,12 @@ impl Tyndex for Poly {
     }
     fn to_index(self) -> usize {
         self.0 as usize
+    }
+}
+
+impl std::fmt::Debug for Poly {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "p{}", self.0)
     }
 }
 

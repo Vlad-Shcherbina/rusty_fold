@@ -12,6 +12,7 @@ struct NamedTask {
 
 crate::entry_point!("render_all_tasks", render_all_tasks);
 fn render_all_tasks() {
+    let start = std::time::Instant::now();
     let mut tasks = vec![];
     for e in project_path("data/tasks").read_dir().unwrap() {
         let path = e.unwrap().path();
@@ -30,4 +31,5 @@ fn render_all_tasks() {
     }
     let data = serde_json::to_string_pretty(&tasks).unwrap();
     std::fs::write(project_path("cache/all_tasks.json"), data).unwrap();
+    eprintln!("it took {:?}", start.elapsed());
 }

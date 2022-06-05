@@ -51,6 +51,23 @@ impl Pt {
             self.rot_cw90();
         }
     }
+
+    pub fn rat_len(&self) -> Option<BigRational> {
+        let d = &self.x * &self.x + &self.y * &self.y;
+        let numer = d.numer();
+        let numer_sqrt = numer.sqrt();
+        if &numer_sqrt * &numer_sqrt != *numer {
+            return None;
+        }
+
+        let denom = d.denom();
+        let denom_sqrt = denom.sqrt();
+        if &denom_sqrt * &denom_sqrt != *denom {
+            return None;
+        }
+
+        Some(BigRational::new(numer_sqrt, denom_sqrt))
+    }
 }
 
 #[test]
@@ -62,6 +79,12 @@ fn test_angle() {
 
     assert_eq!(Pt::parse("1,1").angle().to_string(), "1/2");
     assert_eq!(Pt::parse("-1,-3").angle().to_string(), "11/4");
+}
+
+#[test]
+fn test_rat_len() {
+    assert_eq!(Pt::parse("3,4").rat_len().unwrap().to_string(), "5");
+    assert_eq!(Pt::parse("1,1").rat_len(), None);
 }
 
 impl std::ops::Sub<&Pt> for &Pt {
